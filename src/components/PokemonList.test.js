@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
@@ -43,11 +43,20 @@ describe('PokemonList', () => {
       </Provider>
     );
 
-    fireEvent.click(screen.getByText(/bulbasaur/i));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('pokemon-item-bulbasaur'));
+    });
 
-    expect(store.getActions()).toContainEqual(fetchPokemonDetails('bulbasaur'));
+    // Verify the correct action is dispatched
+    const actions = store.getActions();
+    expect(actions).toContainEqual(expect.objectContaining({
+      type: 'pokemon/fetchPokemonDetails/pending',
+      meta: expect.objectContaining({
+        arg: 'bulbasaur'
+      })
+    }));
 
-    // Update store with selected Pokemon
+    // Update the store to reflect the new state after fetching details
     store = mockStore({
       ...initialState,
       pokemon: {
@@ -62,7 +71,7 @@ describe('PokemonList', () => {
       </Provider>
     );
 
-    expect(await screen.findByText(/bulbasaur/i)).toBeInTheDocument();
-    expect(await screen.findByAltText(/bulbasaur/i)).toHaveAttribute('src', 'image_url');
+    expect(await screen.findByTestId('pokemon-bulbasaur')).toHaveTextContent(/bulbasaur/i);
+    expect(await screen.findByTestId('pokemon-sprite-bulbasaur')).toHaveAttribute('src', 'image_url');
   });
 });

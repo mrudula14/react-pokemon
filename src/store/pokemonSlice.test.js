@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import pokemonReducer, { fetchPokemon, fetchPokemonDetails } from './pokemonSlice';
@@ -29,7 +30,9 @@ describe('pokemonSlice', () => {
     const pokemonData = { results: [{ name: 'bulbasaur' }, { name: 'ivysaur' }] };
     mock.onGet('https://pokeapi.co/api/v2/pokemon?limit=10').reply(200, pokemonData);
 
-    await store.dispatch(fetchPokemon());
+    await act(async () => {
+      await store.dispatch(fetchPokemon());
+    });
 
     const state = store.getState().pokemon;
     expect(state.status).toEqual('succeeded');
@@ -40,7 +43,9 @@ describe('pokemonSlice', () => {
     const pokemonDetails = { species: { name: 'bulbasaur' }, sprites: { front_default: 'image_url' } };
     mock.onGet('https://pokeapi.co/api/v2/pokemon/bulbasaur').reply(200, pokemonDetails);
 
-    await store.dispatch(fetchPokemonDetails('bulbasaur'));
+    await act(async () => {
+      await store.dispatch(fetchPokemonDetails('bulbasaur'));
+    });
 
     const state = store.getState().pokemon;
     expect(state.status).toEqual('succeeded');
